@@ -1,185 +1,274 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <base target="_top">
-  <meta charset="utf-8">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <?!= include('Stylesheet'); ?>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>BK Digital — Sistem Bimbingan Konseling</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div id="loader" class="loader-overlay"><div class="spinner"></div></div>
+<!-- ============ SPLASH / LOGIN API URL ============ -->
+<div id="setupScreen" class="setup-screen">
+  <div class="setup-card">
+    <div class="setup-logo"><i class="fa-solid fa-seedling"></i></div>
+    <h1>BK Digital</h1>
+    <p class="setup-sub">Sistem Bimbingan &amp; Konseling Sekolah</p>
+    <label class="setup-label">Tempel URL Web App Google Apps Script</label>
+    <input id="apiUrlInput" type="url" placeholder="https://script.google.com/macros/s/xxxxx/exec" />
+    <button id="apiUrlSave" class="btn btn-primary btn-block"><i class="fa-solid fa-arrow-right-to-bracket"></i> Masuk ke Dashboard</button>
+    <p class="setup-note">URL ini hanya disimpan di browser kamu (localStorage), tidak dikirim ke mana-mana. Lihat README untuk cara membuatnya.</p>
+  </div>
+</div>
 
-  <button id="hamburger" class="hamburger" aria-label="Menu">☰</button>
+<!-- ============ APP SHELL ============ -->
+<div id="app" class="app hidden">
 
-  <aside id="sidebar" class="sidebar">
-    <div class="brand">
-      <span class="brand-icon">🧭</span>
-      <div>
-        <div class="brand-title">BK Digital</div>
-        <div class="brand-sub">Bimbingan &amp; Konseling</div>
-      </div>
+  <!-- ---------- SIDEBAR (desktop) ---------- -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon"><i class="fa-solid fa-seedling"></i></span>
+      <span class="brand-text">BK Digital</span>
     </div>
     <nav class="nav">
-      <button class="nav-item active" data-view="dashboard">📊 <span>Dashboard</span></button>
-      <button class="nav-item" data-view="siswa">🧑‍🎓 <span>Data Siswa</span></button>
-      <button class="nav-item" data-view="absensi">🗓️ <span>Absensi</span></button>
-      <button class="nav-item" data-view="pelanggaran">⚠️ <span>Pelanggaran</span></button>
-      <button class="nav-item" data-view="konseling">💬 <span>Konseling</span></button>
-      <button class="nav-item" data-view="kolaborasi">🤝 <span>Kolaborasi</span></button>
-      <button class="nav-item" data-view="laporan">🖨️ <span>Cetak Laporan</span></button>
+      <a href="#dashboard" class="nav-item active" data-page="dashboard"><i class="fa-solid fa-chart-simple"></i><span>Dashboard</span></a>
+      <a href="#siswa" class="nav-item" data-page="siswa"><i class="fa-solid fa-user-graduate"></i><span>Data Siswa</span></a>
+      <a href="#absensi" class="nav-item" data-page="absensi"><i class="fa-solid fa-calendar-check"></i><span>Absensi</span></a>
+      <a href="#pelanggaran" class="nav-item" data-page="pelanggaran"><i class="fa-solid fa-triangle-exclamation"></i><span>Pelanggaran</span></a>
+      <a href="#konseling" class="nav-item" data-page="konseling"><i class="fa-solid fa-comments"></i><span>Konseling</span></a>
+      <a href="#kolaborasi" class="nav-item" data-page="kolaborasi"><i class="fa-solid fa-people-arrows"></i><span>Kolaborasi</span></a>
+      <a href="#laporan" class="nav-item" data-page="laporan"><i class="fa-solid fa-file-pdf"></i><span>Laporan</span></a>
     </nav>
-    <div class="sidebar-footer">Data tersimpan otomatis di Google Sheets</div>
+    <div class="sidebar-foot">
+      <button id="settingsBtn" class="nav-item nav-item--ghost"><i class="fa-solid fa-gear"></i><span>Pengaturan</span></button>
+    </div>
   </aside>
 
-  <div id="overlay" class="overlay"></div>
-
-  <main class="main">
+  <!-- ---------- MAIN ---------- -->
+  <div class="main">
     <header class="topbar">
-      <div id="pageTitle" class="page-title">Dashboard</div>
-      <div class="topbar-date" id="topbarDate"></div>
+      <button class="icon-btn hamburger" id="hamburgerBtn" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+      <h1 id="pageTitle">Dashboard</h1>
+      <div class="topbar-right">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="globalSearch" type="text" placeholder="Cari nama siswa..." />
+        </div>
+        <button class="icon-btn" id="refreshBtn" title="Muat ulang data"><i class="fa-solid fa-rotate"></i></button>
+      </div>
     </header>
 
-    <section id="content" class="content">
+    <main class="content" id="content">
 
-      <!-- ============ DASHBOARD ============ -->
-      <div class="view" id="view-dashboard">
+      <!-- ===== DASHBOARD ===== -->
+      <section class="page active" id="page-dashboard">
         <div class="stat-grid">
-          <div class="stat-card blue">
-            <div class="stat-num" id="statSiswa">0</div>
-            <div class="stat-label">Total Siswa</div>
+          <div class="stat-card stat-card--primary">
+            <div class="stat-icon"><i class="fa-solid fa-user-graduate"></i></div>
+            <div><div class="stat-value" id="statSiswa">0</div><div class="stat-label">Total Siswa</div></div>
           </div>
-          <div class="stat-card orange">
-            <div class="stat-num" id="statPelanggaran">0</div>
-            <div class="stat-label">Pelanggaran Bulan Ini</div>
+          <div class="stat-card stat-card--amber">
+            <div class="stat-icon"><i class="fa-solid fa-calendar-xmark"></i></div>
+            <div><div class="stat-value" id="statAlpa">0</div><div class="stat-label">Alpa Bulan Ini</div></div>
           </div>
-          <div class="stat-card green">
-            <div class="stat-num" id="statKonseling">0</div>
-            <div class="stat-label">Konseling Bulan Ini</div>
+          <div class="stat-card stat-card--danger">
+            <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div><div class="stat-value" id="statPelanggaran">0</div><div class="stat-label">Pelanggaran Bulan Ini</div></div>
           </div>
-          <div class="stat-card purple">
-            <div class="stat-num" id="statKolaborasi">0</div>
-            <div class="stat-label">Kolaborasi Bulan Ini</div>
+          <div class="stat-card stat-card--success">
+            <div class="stat-icon"><i class="fa-solid fa-comments"></i></div>
+            <div><div class="stat-value" id="statKonseling">0</div><div class="stat-label">Sesi Konseling Bulan Ini</div></div>
           </div>
         </div>
 
-        <div class="chart-grid">
-          <div class="card chart-card">
-            <h3>Pelanggaran per Kelas (Bulan Ini)</h3>
-            <canvas id="chartPerKelas"></canvas>
-          </div>
-          <div class="card chart-card">
-            <h3>Distribusi Status Absensi (Bulan Ini)</h3>
-            <canvas id="chartAbsensi"></canvas>
-          </div>
-          <div class="card chart-card wide">
-            <h3>Tren Konseling 6 Bulan Terakhir</h3>
-            <canvas id="chartTrend"></canvas>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h3>Tren Pelanggaran &amp; Absensi (6 Bulan)</h3></div>
+            <canvas id="chartTrend" height="220"></canvas>
           </div>
           <div class="card">
-            <h3>Top 5 Siswa - Poin Pelanggaran</h3>
-            <ol id="topSiswaList" class="top-list"></ol>
+            <div class="card-head"><h3>Jenis Pelanggaran Terbanyak</h3></div>
+            <canvas id="chartPelanggaran" height="220"></canvas>
           </div>
         </div>
-      </div>
 
-      <!-- ============ SISWA ============ -->
-      <div class="view hidden" id="view-siswa">
-        <div class="toolbar">
-          <input type="text" class="search-box" id="search-siswa" placeholder="🔍 Cari nama / NIS...">
-          <select id="filterKelas-siswa" class="filter-select"><option value="">Semua Kelas</option></select>
-          <button class="btn btn-primary" onclick="openForm('siswa')">+ Tambah Siswa</button>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h3>Status Kehadiran</h3></div>
+            <canvas id="chartAbsensi" height="220"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Aktivitas Terbaru</h3></div>
+            <ul class="activity-list" id="activityList"></ul>
+          </div>
         </div>
-        <div class="table-wrap"><table id="table-siswa"><thead></thead><tbody></tbody></table></div>
-      </div>
+      </section>
 
-      <!-- ============ ABSENSI ============ -->
-      <div class="view hidden" id="view-absensi">
+      <!-- ===== DATA SISWA ===== -->
+      <section class="page" id="page-siswa">
         <div class="toolbar">
-          <input type="text" class="search-box" id="search-absensi" placeholder="🔍 Cari nama / NIS...">
-          <select id="filterKelas-absensi" class="filter-select"><option value="">Semua Kelas</option></select>
-          <button class="btn btn-primary" onclick="openForm('absensi')">+ Tambah Absensi</button>
+          <div class="filter-group">
+            <select id="filterKelasSiswa" class="select"><option value="">Semua Kelas</option></select>
+          </div>
+          <button class="btn btn-primary" id="btnAddSiswa"><i class="fa-solid fa-plus"></i> Tambah Siswa</button>
         </div>
-        <div class="table-wrap"><table id="table-absensi"><thead></thead><tbody></tbody></table></div>
-      </div>
+        <div class="card table-card">
+          <div class="table-wrap">
+            <table class="table" id="tableSiswa">
+              <thead><tr><th>NIS</th><th>Nama</th><th>Kelas</th><th>L/P</th><th>Orang Tua</th><th>No. HP Ortu</th><th>Status</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="empty-state" style="display:none"><i class="fa-solid fa-user-graduate"></i><p>Belum ada data siswa. Klik "Tambah Siswa" untuk mulai.</p></div>
+        </div>
+      </section>
 
-      <!-- ============ PELANGGARAN ============ -->
-      <div class="view hidden" id="view-pelanggaran">
+      <!-- ===== ABSENSI ===== -->
+      <section class="page" id="page-absensi">
         <div class="toolbar">
-          <input type="text" class="search-box" id="search-pelanggaran" placeholder="🔍 Cari nama / NIS...">
-          <select id="filterKelas-pelanggaran" class="filter-select"><option value="">Semua Kelas</option></select>
-          <button class="btn btn-primary" onclick="openForm('pelanggaran')">+ Tambah Pelanggaran</button>
+          <div class="filter-group">
+            <input type="date" id="filterTglAbsensi" class="select" />
+            <select id="filterKelasAbsensi" class="select"><option value="">Semua Kelas</option></select>
+            <select id="filterStatusAbsensi" class="select">
+              <option value="">Semua Status</option>
+              <option value="Hadir">Hadir</option><option value="Sakit">Sakit</option>
+              <option value="Izin">Izin</option><option value="Alpa">Alpa</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="btnAddAbsensi"><i class="fa-solid fa-plus"></i> Catat Absensi</button>
         </div>
-        <div class="table-wrap"><table id="table-pelanggaran"><thead></thead><tbody></tbody></table></div>
-      </div>
+        <div class="card"><canvas id="chartAbsensiPage" height="90"></canvas></div>
+        <div class="card table-card">
+          <div class="table-wrap">
+            <table class="table" id="tableAbsensi">
+              <thead><tr><th>Tanggal</th><th>Nama</th><th>Kelas</th><th>Status</th><th>Keterangan</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="empty-state" style="display:none"><i class="fa-solid fa-calendar-check"></i><p>Belum ada data absensi.</p></div>
+        </div>
+      </section>
 
-      <!-- ============ KONSELING ============ -->
-      <div class="view hidden" id="view-konseling">
+      <!-- ===== PELANGGARAN ===== -->
+      <section class="page" id="page-pelanggaran">
         <div class="toolbar">
-          <input type="text" class="search-box" id="search-konseling" placeholder="🔍 Cari nama / NIS...">
-          <select id="filterKelas-konseling" class="filter-select"><option value="">Semua Kelas</option></select>
-          <button class="btn btn-primary" onclick="openForm('konseling')">+ Tambah Konseling</button>
+          <div class="filter-group">
+            <select id="filterKelasPelanggaran" class="select"><option value="">Semua Kelas</option></select>
+            <input type="month" id="filterBulanPelanggaran" class="select" />
+          </div>
+          <button class="btn btn-primary" id="btnAddPelanggaran"><i class="fa-solid fa-plus"></i> Catat Pelanggaran</button>
         </div>
-        <div class="table-wrap"><table id="table-konseling"><thead></thead><tbody></tbody></table></div>
-      </div>
+        <div class="card table-card">
+          <div class="table-wrap">
+            <table class="table" id="tablePelanggaran">
+              <thead><tr><th>Tanggal</th><th>Nama</th><th>Kelas</th><th>Jenis</th><th>Poin</th><th>Penanganan</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="empty-state" style="display:none"><i class="fa-solid fa-triangle-exclamation"></i><p>Belum ada data pelanggaran.</p></div>
+        </div>
+      </section>
 
-      <!-- ============ KOLABORASI ============ -->
-      <div class="view hidden" id="view-kolaborasi">
+      <!-- ===== KONSELING ===== -->
+      <section class="page" id="page-konseling">
         <div class="toolbar">
-          <input type="text" class="search-box" id="search-kolaborasi" placeholder="🔍 Cari nama / NIS...">
-          <select id="filterKelas-kolaborasi" class="filter-select"><option value="">Semua Kelas</option></select>
-          <button class="btn btn-primary" onclick="openForm('kolaborasi')">+ Tambah Kolaborasi</button>
+          <div class="filter-group">
+            <select id="filterKelasKonseling" class="select"><option value="">Semua Kelas</option></select>
+          </div>
+          <button class="btn btn-primary" id="btnAddKonseling"><i class="fa-solid fa-plus"></i> Catat Sesi Konseling</button>
         </div>
-        <div class="table-wrap"><table id="table-kolaborasi"><thead></thead><tbody></tbody></table></div>
-      </div>
+        <div class="card-list" id="listKonseling"></div>
+        <div class="empty-state" id="emptyKonseling" style="display:none"><i class="fa-solid fa-comments"></i><p>Belum ada catatan konseling.</p></div>
+      </section>
 
-      <!-- ============ LAPORAN ============ -->
-      <div class="view hidden" id="view-laporan">
+      <!-- ===== KOLABORASI ===== -->
+      <section class="page" id="page-kolaborasi">
+        <div class="toolbar">
+          <div class="filter-group">
+            <select id="filterJenisKolaborasi" class="select">
+              <option value="">Semua Jenis</option>
+              <option value="Pemanggilan Orang Tua">Pemanggilan Orang Tua</option>
+              <option value="Home Visit">Home Visit</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="btnAddKolaborasi"><i class="fa-solid fa-plus"></i> Catat Kolaborasi</button>
+        </div>
+        <div class="card-list" id="listKolaborasi"></div>
+        <div class="empty-state" id="emptyKolaborasi" style="display:none"><i class="fa-solid fa-people-arrows"></i><p>Belum ada catatan kolaborasi.</p></div>
+      </section>
+
+      <!-- ===== LAPORAN ===== -->
+      <section class="page" id="page-laporan">
         <div class="card">
-          <h3>Cetak Laporan PDF</h3>
-          <p class="muted">Pilih modul dan filter data, lalu unduh laporan dalam format PDF.</p>
-          <div class="report-form">
-            <label>Modul
-              <select id="reportModule">
-                <option value="Siswa">Data Siswa</option>
-                <option value="Absensi">Absensi</option>
-                <option value="Pelanggaran">Pelanggaran</option>
-                <option value="Konseling">Konseling</option>
-                <option value="Kolaborasi">Kolaborasi</option>
+          <div class="card-head"><h3>Cetak Laporan</h3></div>
+          <p class="muted">Pilih jenis laporan dan rentang data, lalu cetak sebagai PDF (gunakan dialog cetak browser, pilih "Save as PDF").</p>
+          <div class="form-grid">
+            <div class="field">
+              <label>Jenis Laporan</label>
+              <select id="reportType" class="select select--full">
+                <option value="siswa">Data Siswa</option>
+                <option value="absensi">Rekap Absensi</option>
+                <option value="pelanggaran">Rekap Pelanggaran</option>
+                <option value="konseling">Rekap Konseling</option>
+                <option value="kolaborasi">Rekap Kolaborasi</option>
               </select>
-            </label>
-            <label>Kelas
-              <select id="reportKelas"><option value="">Semua Kelas</option></select>
-            </label>
-            <label>Dari Tanggal <input type="date" id="reportStart"></label>
-            <label>Sampai Tanggal <input type="date" id="reportEnd"></label>
-            <button class="btn btn-primary" onclick="downloadReport()">🖨️ Cetak PDF</button>
+            </div>
+            <div class="field">
+              <label>Kelas (opsional)</label>
+              <select id="reportKelas" class="select select--full"><option value="">Semua Kelas</option></select>
+            </div>
           </div>
+          <button class="btn btn-primary" id="btnGenerateReport"><i class="fa-solid fa-file-pdf"></i> Buat &amp; Cetak Laporan</button>
         </div>
-      </div>
+        <div class="card" id="reportPreviewCard" style="display:none">
+          <div id="reportPreview" class="report-preview"></div>
+        </div>
+      </section>
 
-    </section>
-  </main>
-
-  <!-- ============ MODAL FORM (generik untuk semua modul) ============ -->
-  <div id="modalOverlay" class="modal-overlay hidden">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 id="modalTitle">Tambah Data</h3>
-        <button class="modal-close" onclick="closeForm()">✕</button>
-      </div>
-      <div class="modal-body" id="modalBody"></div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeForm()">Batal</button>
-        <button class="btn btn-primary" onclick="submitForm()">💾 Simpan</button>
-      </div>
-    </div>
+    </main>
   </div>
 
-  <div id="toast" class="toast hidden"></div>
+  <!-- ---------- MOBILE BOTTOM NAV ---------- -->
+  <nav class="bottom-nav" id="bottomNav">
+    <a href="#dashboard" class="bn-item active" data-page="dashboard"><i class="fa-solid fa-chart-simple"></i><span>Dashboard</span></a>
+    <a href="#siswa" class="bn-item" data-page="siswa"><i class="fa-solid fa-user-graduate"></i><span>Siswa</span></a>
+    <a href="#absensi" class="bn-item" data-page="absensi"><i class="fa-solid fa-calendar-check"></i><span>Absensi</span></a>
+    <a href="#pelanggaran" class="bn-item" data-page="pelanggaran"><i class="fa-solid fa-triangle-exclamation"></i><span>Pelanggaran</span></a>
+    <a href="#more" class="bn-item" id="bnMore"><i class="fa-solid fa-ellipsis"></i><span>Lainnya</span></a>
+  </nav>
+  <div class="more-sheet" id="moreSheet">
+    <div class="more-sheet-inner">
+      <a href="#konseling" class="nav-item" data-page="konseling"><i class="fa-solid fa-comments"></i><span>Konseling</span></a>
+      <a href="#kolaborasi" class="nav-item" data-page="kolaborasi"><i class="fa-solid fa-people-arrows"></i><span>Kolaborasi</span></a>
+      <a href="#laporan" class="nav-item" data-page="laporan"><i class="fa-solid fa-file-pdf"></i><span>Laporan</span></a>
+      <button class="nav-item nav-item--ghost" id="settingsBtnMobile"><i class="fa-solid fa-gear"></i><span>Pengaturan</span></button>
+    </div>
+  </div>
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+</div>
 
-  <?!= include('JavaScript'); ?>
+<!-- ============ MODAL (generic form) ============ -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Form</h3>
+      <button class="icon-btn" id="modalClose"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast"></div>
+
+<!-- ============ LOADING OVERLAY ============ -->
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
