@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <?!= include('Stylesheet'); ?>
+</head>
+<body>
+
+  <div id="loader" class="loader-overlay"><div class="spinner"></div></div>
+
+  <button id="hamburger" class="hamburger" aria-label="Menu">☰</button>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="brand">
+      <span class="brand-icon">🧭</span>
+      <div>
+        <div class="brand-title">BK Digital</div>
+        <div class="brand-sub">Bimbingan &amp; Konseling</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="dashboard">📊 <span>Dashboard</span></button>
+      <button class="nav-item" data-view="siswa">🧑‍🎓 <span>Data Siswa</span></button>
+      <button class="nav-item" data-view="absensi">🗓️ <span>Absensi</span></button>
+      <button class="nav-item" data-view="pelanggaran">⚠️ <span>Pelanggaran</span></button>
+      <button class="nav-item" data-view="konseling">💬 <span>Konseling</span></button>
+      <button class="nav-item" data-view="kolaborasi">🤝 <span>Kolaborasi</span></button>
+      <button class="nav-item" data-view="laporan">🖨️ <span>Cetak Laporan</span></button>
+    </nav>
+    <div class="sidebar-footer">Data tersimpan otomatis di Google Sheets</div>
+  </aside>
+
+  <div id="overlay" class="overlay"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <div id="pageTitle" class="page-title">Dashboard</div>
+      <div class="topbar-date" id="topbarDate"></div>
+    </header>
+
+    <section id="content" class="content">
+
+      <!-- ============ DASHBOARD ============ -->
+      <div class="view" id="view-dashboard">
+        <div class="stat-grid">
+          <div class="stat-card blue">
+            <div class="stat-num" id="statSiswa">0</div>
+            <div class="stat-label">Total Siswa</div>
+          </div>
+          <div class="stat-card orange">
+            <div class="stat-num" id="statPelanggaran">0</div>
+            <div class="stat-label">Pelanggaran Bulan Ini</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-num" id="statKonseling">0</div>
+            <div class="stat-label">Konseling Bulan Ini</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-num" id="statKolaborasi">0</div>
+            <div class="stat-label">Kolaborasi Bulan Ini</div>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="card chart-card">
+            <h3>Pelanggaran per Kelas (Bulan Ini)</h3>
+            <canvas id="chartPerKelas"></canvas>
+          </div>
+          <div class="card chart-card">
+            <h3>Distribusi Status Absensi (Bulan Ini)</h3>
+            <canvas id="chartAbsensi"></canvas>
+          </div>
+          <div class="card chart-card wide">
+            <h3>Tren Konseling 6 Bulan Terakhir</h3>
+            <canvas id="chartTrend"></canvas>
+          </div>
+          <div class="card">
+            <h3>Top 5 Siswa - Poin Pelanggaran</h3>
+            <ol id="topSiswaList" class="top-list"></ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SISWA ============ -->
+      <div class="view hidden" id="view-siswa">
+        <div class="toolbar">
+          <input type="text" class="search-box" id="search-siswa" placeholder="🔍 Cari nama / NIS...">
+          <select id="filterKelas-siswa" class="filter-select"><option value="">Semua Kelas</option></select>
+          <button class="btn btn-primary" onclick="openForm('siswa')">+ Tambah Siswa</button>
+        </div>
+        <div class="table-wrap"><table id="table-siswa"><thead></thead><tbody></tbody></table></div>
+      </div>
+
+      <!-- ============ ABSENSI ============ -->
+      <div class="view hidden" id="view-absensi">
+        <div class="toolbar">
+          <input type="text" class="search-box" id="search-absensi" placeholder="🔍 Cari nama / NIS...">
+          <select id="filterKelas-absensi" class="filter-select"><option value="">Semua Kelas</option></select>
+          <button class="btn btn-primary" onclick="openForm('absensi')">+ Tambah Absensi</button>
+        </div>
+        <div class="table-wrap"><table id="table-absensi"><thead></thead><tbody></tbody></table></div>
+      </div>
+
+      <!-- ============ PELANGGARAN ============ -->
+      <div class="view hidden" id="view-pelanggaran">
+        <div class="toolbar">
+          <input type="text" class="search-box" id="search-pelanggaran" placeholder="🔍 Cari nama / NIS...">
+          <select id="filterKelas-pelanggaran" class="filter-select"><option value="">Semua Kelas</option></select>
+          <button class="btn btn-primary" onclick="openForm('pelanggaran')">+ Tambah Pelanggaran</button>
+        </div>
+        <div class="table-wrap"><table id="table-pelanggaran"><thead></thead><tbody></tbody></table></div>
+      </div>
+
+      <!-- ============ KONSELING ============ -->
+      <div class="view hidden" id="view-konseling">
+        <div class="toolbar">
+          <input type="text" class="search-box" id="search-konseling" placeholder="🔍 Cari nama / NIS...">
+          <select id="filterKelas-konseling" class="filter-select"><option value="">Semua Kelas</option></select>
+          <button class="btn btn-primary" onclick="openForm('konseling')">+ Tambah Konseling</button>
+        </div>
+        <div class="table-wrap"><table id="table-konseling"><thead></thead><tbody></tbody></table></div>
+      </div>
+
+      <!-- ============ KOLABORASI ============ -->
+      <div class="view hidden" id="view-kolaborasi">
+        <div class="toolbar">
+          <input type="text" class="search-box" id="search-kolaborasi" placeholder="🔍 Cari nama / NIS...">
+          <select id="filterKelas-kolaborasi" class="filter-select"><option value="">Semua Kelas</option></select>
+          <button class="btn btn-primary" onclick="openForm('kolaborasi')">+ Tambah Kolaborasi</button>
+        </div>
+        <div class="table-wrap"><table id="table-kolaborasi"><thead></thead><tbody></tbody></table></div>
+      </div>
+
+      <!-- ============ LAPORAN ============ -->
+      <div class="view hidden" id="view-laporan">
+        <div class="card">
+          <h3>Cetak Laporan PDF</h3>
+          <p class="muted">Pilih modul dan filter data, lalu unduh laporan dalam format PDF.</p>
+          <div class="report-form">
+            <label>Modul
+              <select id="reportModule">
+                <option value="Siswa">Data Siswa</option>
+                <option value="Absensi">Absensi</option>
+                <option value="Pelanggaran">Pelanggaran</option>
+                <option value="Konseling">Konseling</option>
+                <option value="Kolaborasi">Kolaborasi</option>
+              </select>
+            </label>
+            <label>Kelas
+              <select id="reportKelas"><option value="">Semua Kelas</option></select>
+            </label>
+            <label>Dari Tanggal <input type="date" id="reportStart"></label>
+            <label>Sampai Tanggal <input type="date" id="reportEnd"></label>
+            <button class="btn btn-primary" onclick="downloadReport()">🖨️ Cetak PDF</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ============ MODAL FORM (generik untuk semua modul) ============ -->
+  <div id="modalOverlay" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Tambah Data</h3>
+        <button class="modal-close" onclick="closeForm()">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeForm()">Batal</button>
+        <button class="btn btn-primary" onclick="submitForm()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <?!= include('JavaScript'); ?>
+</body>
+</html>
