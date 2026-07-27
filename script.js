@@ -584,11 +584,54 @@ const REPORT_TITLES = {
   konseling:'Rekap Sesi Konseling', kolaborasi:'Rekap Kolaborasi (Panggilan Ortu / Home Visit)'
 };
 
+$('#reportPeriode').addEventListener('change', () => {
+  const val = $('#reportPeriode').value;
+  $('#reportTanggalField').classList.toggle('hidden', val !== 'harian');
+  $('#reportBulanField').classList.toggle('hidden', val !== 'bulanan');
+});
+(function initReportDefaults(){
+  const today = new Date();
+  $('#reportTanggal').value = today.toISOString().slice(0,10);
+  $('#reportBulan').value = today.toISOString().slice(0,7);
+})();
+
+function filterByPeriode(rows, type){
+  const periode = $('#reportPeriode').value;
+  if (!periode) return rows;
+  if (!('Tanggal' in (rows[0]||{})) && !REPORT_COLUMNS[type].includes('Tanggal')) return rows;
+  if (periode === 'harian'){
+    const tgl = $('#reportTanggal').value;
+    if (!tgl) return rows;
+    return rows.filter(r => (r.Tanggal||'').slice(0,10) === tgl);
+  }
+  if (periode === 'bulanan'){
+    const bln = $('#reportBulan').value; // yyyy-mm
+    if (!bln) return rows;
+    return rows.filter(r => (r.Tanggal||'').slice(0,7) === bln);
+  }
+  return rows;
+}
+function periodeLabel(){
+  const periode = $('#reportPeriode').value;
+  if (periode === 'harian'){
+    const tgl = $('#reportTanggal').value;
+    return tgl ? `Harian — ${fmtDate(tgl)}` : 'Harian';
+  }
+  if (periode === 'bulanan'){
+    const bln = $('#reportBulan').value;
+    if (!bln) return 'Bulanan';
+    const [y,m] = bln.split('-');
+    return `Bulanan — ${new Date(y, m-1, 1).toLocaleDateString('id-ID',{month:'long',year:'numeric'})}`;
+  }
+  return 'Semua Tanggal';
+}
+
 $('#btnGenerateReport').addEventListener('click', () => {
   const type = $('#reportType').value;
   const kelas = $('#reportKelas').value;
   let rows = STATE[type] || [];
   if (kelas) rows = rows.filter(r => r.Kelas === kelas);
+  rows = filterByPeriode(rows, type);
   if ('Tanggal' in (rows[0]||{}) || REPORT_COLUMNS[type].includes('Tanggal')){
     rows = rows.slice().sort((a,b)=> new Date(a.Tanggal)-new Date(b.Tanggal));
   }
@@ -597,7 +640,7 @@ $('#btnGenerateReport').addEventListener('click', () => {
 
   const html = `
     <h2>${REPORT_TITLES[type]}</h2>
-    <div class="report-head-line"><span>Kelas: ${kelas || 'Semua Kelas'}</span><span>Dicetak: ${today}</span></div>
+    <div class="report-head-line"><span>Kelas: ${kelas || 'Semua Kelas'} &nbsp;|&nbsp; Periode: ${periodeLabel()}</span><span>Dicetak: ${today}</span></div>
     ${buildReportSummaryHtml(type, rows)}
     <table>
       <thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
