@@ -4,8 +4,8 @@
 // 1. Deploy Code.gs (folder backend-appsscript) sebagai Web App di Apps Script.
 // 2. Salin URL "...../exec" yang muncul, tempel di bawah ini.
 // 3. Samakan API_KEY dengan SECRET_KEY yang ada di Code.gs.
-const API_URL = 'PASTE_URL_WEB_APP_APPS_SCRIPT_DI_SINI';
-const API_KEY = 'ganti-kunci-rahasia-ini';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyGw8VJ6tx_xQE4idce7jOeblitFmFMj_C_nFekZfhspJdm2B3CYiLbOht21UJURqBFKw/exec';
+const API_KEY = '1234';
 
 function apiGet(params) {
   const query = Object.assign({ key: API_KEY }, params);
