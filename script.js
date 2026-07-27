@@ -4,7 +4,7 @@
 // 1. Deploy Code.gs (folder backend-appsscript) sebagai Web App di Apps Script.
 // 2. Salin URL "...../exec" yang muncul, tempel di bawah ini.
 // 3. Samakan API_KEY dengan SECRET_KEY yang ada di Code.gs.
-const API_URL = 'https://script.google.com/macros/s/AKfycbyGw8VJ6tx_xQE4idce7jOeblitFmFMj_C_nFekZfhspJdm2B3CYiLbOht21UJURqBFKw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyGw8VJ6tx_xQE4idce7jOeblitFmFMj_C_nFekZfhspJdm2B3CYiLbOht21UJURqBFKw/exec?action=dashboard&key=1234';
 const API_KEY = '1234';
 
 function apiGet(params) {
