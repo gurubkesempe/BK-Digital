@@ -150,6 +150,15 @@ function populateClassFilters(){
     el.innerHTML = '<option value="">Semua Kelas</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
     el.value = current;
   });
+  populateReportSiswaSelect();
+}
+
+function populateReportSiswaSelect(){
+  const el = $('#reportSiswa'); if (!el) return;
+  const current = el.value;
+  const sorted = STATE.siswa.slice().sort((a,b) => (a.Nama||'').localeCompare(b.Nama||''));
+  el.innerHTML = '<option value="">Pilih siswa...</option>' + sorted.map(s => `<option value="${s.ID}">${s.Nama} — ${s.Kelas}</option>`).join('');
+  el.value = current;
 }
 
 /* ---------------- NAVIGATION ---------------- */
@@ -589,6 +598,11 @@ $('#reportPeriode').addEventListener('change', () => {
   $('#reportTanggalField').classList.toggle('hidden', val !== 'harian');
   $('#reportBulanField').classList.toggle('hidden', val !== 'bulanan');
 });
+$('#reportType').addEventListener('change', () => {
+  const isIndividu = $('#reportType').value === 'individu';
+  $('#reportKelasField').classList.toggle('hidden', isIndividu);
+  $('#reportSiswaField').classList.toggle('hidden', !isIndividu);
+});
 (function initReportDefaults(){
   const today = new Date();
   $('#reportTanggal').value = today.toISOString().slice(0,10);
@@ -628,6 +642,56 @@ function periodeLabel(){
 
 $('#btnGenerateReport').addEventListener('click', () => {
   const type = $('#reportType').value;
+
+  if (type === 'individu'){
+    const siswaId = $('#reportSiswa').value;
+    if (!siswaId){ toast('Pilih siswa terlebih dahulu.', 'error'); return; }
+    const s = siswaById(siswaId);
+    if (!s){ toast('Data siswa tidak ditemukan.', 'error'); return; }
+
+    const mine = (type) => filterByPeriode((STATE[type]||[]).filter(r => String(r.SiswaID) === String(siswaId)), type)
+      .slice().sort((a,b)=> new Date(a.Tanggal) - new Date(b.Tanggal));
+    const absensi = mine('absensi');
+    const pelanggaran = mine('pelanggaran');
+    const konseling = mine('konseling');
+    const kolaborasi = mine('kolaborasi');
+    const today = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+
+    const section = (title, cols, rows, emptyMsg) => `
+      <h3 style="margin-top:22px">${title}</h3>
+      <table>
+        <thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+        <tbody>
+          ${rows.length ? rows.map(r => `<tr>${cols.map(c => `<td>${c==='Tanggal'?fmtDate(r[c]):(r[c] ?? '-')}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${cols.length}" style="text-align:center;color:#999">${emptyMsg}</td></tr>`}
+        </tbody>
+      </table>`;
+
+    const html = `
+      <h2>Laporan Individu Siswa</h2>
+      <div class="report-head-line"><span>Periode: ${periodeLabel()}</span><span>Dicetak: ${today}</span></div>
+      <div class="report-summary">
+        <div class="report-summary-item"><span class="label">Nama</span><span class="value" style="font-size:14px">${s.Nama}</span></div>
+        <div class="report-summary-item"><span class="label">NIS</span><span class="value" style="font-size:14px">${s.NIS||'-'}</span></div>
+        <div class="report-summary-item"><span class="label">Kelas</span><span class="value" style="font-size:14px">${s.Kelas||'-'}</span></div>
+        <div class="report-summary-item"><span class="label">Jenis Kelamin</span><span class="value" style="font-size:14px">${s.JenisKelamin||'-'}</span></div>
+        <div class="report-summary-item"><span class="label">Orang Tua/Wali</span><span class="value" style="font-size:14px">${s.NamaOrtu||'-'}</span></div>
+        <div class="report-summary-item"><span class="label">No. HP Ortu</span><span class="value" style="font-size:14px">${s.NoHPOrtu||'-'}</span></div>
+      </div>
+      ${buildReportSummaryHtml('absensi', absensi)}
+      ${section('Rekap Absensi', ['Tanggal','Status','Keterangan'], absensi, 'Tidak ada catatan absensi')}
+      ${buildReportSummaryHtml('pelanggaran', pelanggaran)}
+      ${section('Rekap Pelanggaran', ['Tanggal','JenisPelanggaran','Poin','Penanganan'], pelanggaran, 'Tidak ada catatan pelanggaran')}
+      ${section('Rekap Konseling', ['Tanggal','Topik','HasilKonseling','TindakLanjut'], konseling, 'Tidak ada catatan konseling')}
+      ${section('Rekap Kolaborasi (Panggilan Ortu / Home Visit)', ['Tanggal','Jenis','Tujuan','Hasil'], kolaborasi, 'Tidak ada catatan kolaborasi')}
+      ${s.Catatan ? `<h3 style="margin-top:22px">Catatan Tambahan</h3><p>${s.Catatan}</p>` : ''}
+    `;
+    $('#reportPreview').innerHTML = html;
+    $('#reportPreviewCard').style.display = 'block';
+    $('#reportPreviewCard').scrollIntoView({ behavior:'smooth' });
+    setTimeout(() => window.print(), 400);
+    return;
+  }
+
   const kelas = $('#reportKelas').value;
   let rows = STATE[type] || [];
   if (kelas) rows = rows.filter(r => r.Kelas === kelas);
