@@ -598,6 +598,7 @@ $('#btnGenerateReport').addEventListener('click', () => {
   const html = `
     <h2>${REPORT_TITLES[type]}</h2>
     <div class="report-head-line"><span>Kelas: ${kelas || 'Semua Kelas'}</span><span>Dicetak: ${today}</span></div>
+    ${buildReportSummaryHtml(type, rows)}
     <table>
       <thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
       <tbody>
@@ -611,6 +612,31 @@ $('#btnGenerateReport').addEventListener('click', () => {
   $('#reportPreviewCard').scrollIntoView({ behavior:'smooth' });
   setTimeout(() => window.print(), 400);
 });
+
+/* Ringkasan total absensi (Hadir/Sakit/Izin/Alpa) & total pelanggaran, ditampilkan di atas tabel laporan */
+function buildReportSummaryHtml(type, rows){
+  if (type === 'absensi'){
+    const count = { Hadir:0, Sakit:0, Izin:0, Alpa:0 };
+    rows.forEach(r => { if (count[r.Status] !== undefined) count[r.Status]++; });
+    return `
+      <div class="report-summary">
+        <div class="report-summary-item"><span class="label">Total Hadir</span><span class="value">${count.Hadir}</span></div>
+        <div class="report-summary-item"><span class="label">Total Sakit</span><span class="value">${count.Sakit}</span></div>
+        <div class="report-summary-item"><span class="label">Total Izin</span><span class="value">${count.Izin}</span></div>
+        <div class="report-summary-item"><span class="label">Total Alpa</span><span class="value">${count.Alpa}</span></div>
+        <div class="report-summary-item"><span class="label">Total Keseluruhan</span><span class="value">${rows.length}</span></div>
+      </div>`;
+  }
+  if (type === 'pelanggaran'){
+    const totalPoin = rows.reduce((sum, r) => sum + (Number(r.Poin) || 0), 0);
+    return `
+      <div class="report-summary">
+        <div class="report-summary-item"><span class="label">Total Kasus Pelanggaran</span><span class="value">${rows.length}</span></div>
+        <div class="report-summary-item"><span class="label">Total Poin Pelanggaran</span><span class="value">${totalPoin}</span></div>
+      </div>`;
+  }
+  return '';
+}
 
 /* ---------------- SETUP SCREEN / API URL ---------------- */
 function enterApp(){
