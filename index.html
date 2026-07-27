@@ -218,6 +218,22 @@
               <label>Kelas (opsional)</label>
               <select id="reportKelas" class="select select--full"><option value="">Semua Kelas</option></select>
             </div>
+            <div class="field" id="reportPeriodeField">
+              <label>Periode</label>
+              <select id="reportPeriode" class="select select--full">
+                <option value="">Semua Tanggal</option>
+                <option value="harian">Harian</option>
+                <option value="bulanan">Bulanan</option>
+              </select>
+            </div>
+            <div class="field hidden" id="reportTanggalField">
+              <label>Pilih Tanggal</label>
+              <input type="date" id="reportTanggal" class="select select--full" />
+            </div>
+            <div class="field hidden" id="reportBulanField">
+              <label>Pilih Bulan</label>
+              <input type="month" id="reportBulan" class="select select--full" />
+            </div>
           </div>
           <button class="btn btn-primary" id="btnGenerateReport"><i class="fa-solid fa-file-pdf"></i> Buat &amp; Cetak Laporan</button>
         </div>
