@@ -302,6 +302,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .report-preview th, .report-preview td{ border:1px solid #ccc; padding:6px 8px; text-align:left; font-size:12px; }
 .report-preview th{ background:#f0f0f0; }
 .report-head-line{ display:flex; justify-content:space-between; color:var(--ink-soft); font-size:12.5px; margin-top:2px; }
+.report-summary{ display:flex; flex-wrap:wrap; gap:8px; margin:14px 0; }
+.report-summary-item{ display:flex; flex-direction:column; gap:2px; border:1px solid #ddd; border-radius:8px; padding:8px 14px; background:#f7f8f6; }
+.report-summary-item .label{ font-size:10.5px; font-weight:600; color:#666; text-transform:uppercase; letter-spacing:.02em; }
+.report-summary-item .value{ font-size:17px; font-weight:700; color:var(--ink,#1a1a1a); }
 
 @media print{
   body *{ visibility:hidden; }
