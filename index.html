@@ -212,11 +212,16 @@
                 <option value="pelanggaran">Rekap Pelanggaran</option>
                 <option value="konseling">Rekap Konseling</option>
                 <option value="kolaborasi">Rekap Kolaborasi</option>
+                <option value="individu">Laporan Per Siswa (Individu)</option>
               </select>
             </div>
-            <div class="field">
+            <div class="field" id="reportKelasField">
               <label>Kelas (opsional)</label>
               <select id="reportKelas" class="select select--full"><option value="">Semua Kelas</option></select>
+            </div>
+            <div class="field hidden" id="reportSiswaField">
+              <label>Pilih Siswa</label>
+              <select id="reportSiswa" class="select select--full"><option value="">Pilih siswa...</option></select>
             </div>
             <div class="field" id="reportPeriodeField">
               <label>Periode</label>
